@@ -107,13 +107,13 @@ public class Tailer {
       cursor = oplog.find();
     } else {
       log.info("Tailing the oplog from " + startingTimestamp);
-          BasicDBObject query = new BasicDBObject("ts", new BasicDBObject("$gt", startingTimestamp));
-          cursor = oplog.find(query);
+      BasicDBObject query = new BasicDBObject("ts", new BasicDBObject("$gt", startingTimestamp));
+      cursor = oplog.find(query);
+      cursor.addOption(Bytes.QUERYOPTION_OPLOGREPLAY);
     }
 
     cursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
     cursor.addOption(Bytes.QUERYOPTION_TAILABLE);
-    cursor.addOption(Bytes.QUERYOPTION_OPLOGREPLAY);
     cursor.addOption(Bytes.QUERYOPTION_AWAITDATA);
 
     return cursor;
