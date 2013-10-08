@@ -112,6 +112,7 @@ public class Tailer {
 
     cursor.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
     cursor.addOption(Bytes.QUERYOPTION_TAILABLE);
+    cursor.addOption(Bytes.QUERYOPTION_OPLOGREPLAY);
     cursor.addOption(Bytes.QUERYOPTION_AWAITDATA);
 
     return cursor;
