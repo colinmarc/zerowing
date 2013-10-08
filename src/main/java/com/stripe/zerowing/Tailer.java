@@ -303,7 +303,7 @@ public class Tailer {
       return null;
     } else {
       byte[] raw_optime = res.getValue(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_OPTIME);
-      byte[] raw_inc = res.getValue(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_OPTIME);
+      byte[] raw_inc = res.getValue(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_INC);
 
       int optime = Integer.parseInt(new String(raw_optime));
       int inc = Integer.parseInt(new String(raw_inc));
