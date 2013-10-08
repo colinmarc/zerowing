@@ -55,6 +55,7 @@ public class Tailer {
   private final AtomicBoolean _running = new AtomicBoolean(false);
   private int _optime = 0;
   private int _inc = 0;
+  private boolean _optimeSet = false;
 
   public Tailer(Configuration conf, Mongo mongo, HConnection hbase) {
     _conf = conf;
@@ -234,6 +235,7 @@ public class Tailer {
     int old_optime = _optime;
     _optime = ts.getTime();
     _inc = ts.getInc();
+    _optimeSet = true;
 
     // only save to disk every 60 seconds
     if ((_optime - old_optime) >= 60) {
@@ -243,6 +245,8 @@ public class Tailer {
   }
 
   private void saveOptime() {
+    if (!_optimeSet) return;
+
     Put put = new Put(getTailerID().getBytes());
     put.add(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_OPTIME, Integer.toString(_optime).getBytes());
     put.add(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_INC, Integer.toString(_inc).getBytes());
