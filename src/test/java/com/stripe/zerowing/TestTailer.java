@@ -56,15 +56,6 @@ public class TestTailer {
     tableName = "zw._test_zerowing." + name;
   }
 
-  @After
-  public void tearDown() throws Exception {
-     try {
-       HBaseAdmin hbase = util.getHBaseAdmin();
-       hbase.disableTable(tableName);
-       hbase.deleteTable(tableName);
-     } catch (TableNotFoundException e) {}
-  }
-
   @AfterClass
   public static void tearDownClass() throws Exception {
     util.shutdownMiniCluster();
