@@ -143,6 +143,35 @@ public class TestTailer {
     assertEquals(3, getSingleValue(table, "c"));
   }
 
+  @Test
+  public void testInsertOnlyWithBufferedWrites() throws Exception {
+    Configuration conf = new Configuration(util.getConfiguration());
+    ConfigUtil.setSkipBacklog(conf, true);
+    ConfigUtil.setSkipUpdates(conf, true);
+    ConfigUtil.setSkipDeletes(conf, true);
+    ConfigUtil.setBufferWrites(conf, true);
+
+    HBaseAdmin admin = util.getHBaseAdmin();
+    assertFalse(admin.tableExists(tableName));
+
+    startTailer(conf);
+    DBCollection collection = mongo.getDB("_test_zerowing").getCollection(name);
+    collection.insert(new BasicDBObject("_id", "a").append("num", 1));
+    collection.insert(new BasicDBObject("_id", "b").append("num", 2));
+    collection.insert(new BasicDBObject("_id", "c").append("num", 3));
+    Thread.sleep(15000);
+    stopTailer();
+
+    assertTrue(admin.tableExists(tableName));
+
+    HTable table = new HTable(conf, tableName);
+    assertEquals(3, getCount(table));
+
+    assertEquals(1, getSingleValue(table, "a"));
+    assertEquals(2, getSingleValue(table, "b"));
+    assertEquals(3, getSingleValue(table, "c"));
+  }
+
   private void createOps() throws Exception {
     DBCollection collection = mongo.getDB("_test_zerowing").getCollection(name);
     collection.insert(new BasicDBObject("_id", "a").append("num", 1));
