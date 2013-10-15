@@ -179,7 +179,7 @@ public class TestTailer {
     collection.insert(new BasicDBObject("_id", "c").append("num", 3));
     collection.update(new BasicDBObject("_id", "a"), new BasicDBObject("num", 4));
     collection.remove(new BasicDBObject("_id", "c"));
-    Thread.sleep(10000);
+    Thread.sleep(15000);
   }
 
   private static class TailerThread extends Thread {
