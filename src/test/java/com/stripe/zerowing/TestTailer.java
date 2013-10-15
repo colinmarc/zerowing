@@ -194,10 +194,6 @@ public class TestTailer {
     public void run() {
       tailer.tail();
     }
-
-    public void stopTailer() {
-      tailer.stop();
-    }
   }
 
   private void startTailer(Configuration conf) throws Exception {
@@ -207,8 +203,8 @@ public class TestTailer {
   }
 
   private void stopTailer() throws Exception {
-    tailerThread.stopTailer();
-    Thread.sleep(2000);
+    tailerThread.interrupt();
+    tailerThread.join();
   }
 
   private int getSingleValue(HTable table, String id) throws Exception {
