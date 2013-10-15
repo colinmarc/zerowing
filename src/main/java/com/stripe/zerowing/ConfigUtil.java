@@ -11,6 +11,7 @@ public class ConfigUtil {
   public static final String SKIP_BACKLOG = "zerowing.tailer.skip_backlog";
   public static final String SKIP_UPDATES = "zerowing.tailer.skip_updates";
   public static final String SKIP_DELETES = "zerowing.tailer.skip_deletes";
+  public static final String BUFFER_WRITES = "zerowing.tailer.buffer_writes";
   public static final String TAILER_STATE_TABLE = "zerowing.tailer.state_table";
 
   public static final String DEFAULT_TEMPORARY_HFILE_PATH = "/tmp/zerowing_hfile_out";
@@ -89,6 +90,14 @@ public class ConfigUtil {
 
   public static boolean getSkipDeletes(Configuration conf) {
     return conf.getBoolean(SKIP_DELETES, false);
+  }
+
+  public static void setBufferWrites(Configuration conf, boolean autoFlush) {
+    conf.setBoolean(BUFFER_WRITES, autoFlush);
+  }
+
+  public static boolean getBufferWrites(Configuration conf) {
+    return conf.getBoolean(BUFFER_WRITES, false);
   }
 
   public static void setTailerStateTable(Configuration conf, String stateTableName) {

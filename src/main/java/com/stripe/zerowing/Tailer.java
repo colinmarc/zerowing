@@ -51,6 +51,7 @@ public class Tailer {
 
   private final boolean _skipUpdates;
   private final boolean _skipDeletes;
+  private final boolean _bufferWrites;
 
   private final AtomicBoolean _running = new AtomicBoolean(false);
   private int _optime = 0;
@@ -68,6 +69,7 @@ public class Tailer {
 
     _skipUpdates = ConfigUtil.getSkipUpdates(_conf);
     _skipDeletes = ConfigUtil.getSkipDeletes(_conf);
+    _bufferWrites = ConfigUtil.getBufferWrites(_conf);
   }
 
   public void tail() {
@@ -89,6 +91,7 @@ public class Tailer {
     } finally {
       saveOptime();
       cursor.close();
+      closeTables();
     }
   }
 
@@ -226,8 +229,23 @@ public class Tailer {
     }
 
     HTable table = new HTable(_conf, tableName);
+
+    if (_bufferWrites) {
+      table.setAutoFlush(false, true);
+    }
+
     _knownTables.put(tableName, table);
     return table;
+  }
+
+  private void closeTables() {
+    for (HTable table : _knownTables.values()) {
+      try {
+        table.close();
+      } catch (IOException e) {
+        log.error("Failed to close HBase table: " + table);
+      }
+    }
   }
 
   private void updateOptime(BasicDBObject doc) {
@@ -328,6 +346,9 @@ public class Tailer {
     @Parameter(names = "--skip-deletes", description = "Skip delete operations - when a record is deleted in MongoDB, don't delete it in HBase")
     private boolean skipDeletes;
 
+    @Parameter(names = "--buffer-writes", description = "Buffer writes using the HBase client API. You should only use this with insert-only tailing, because it destroys ordering in most cases (and is generally unsafe, besides).")
+    private boolean bufferWrites;
+
     @Parameter(names = "--help", help = true, description = "Show this message")
     private boolean help;
   }
@@ -362,6 +383,14 @@ public class Tailer {
 
     if (opts.skipDeletes) {
       ConfigUtil.setSkipDeletes(conf, true);
+    }
+
+    if (opts.bufferWrites) {
+      if (!opts.skipUpdates || !opts.skipDeletes) {
+        log.warn("--buffer-writes is set, but you're missing --skip-updates and/or --skip-deletes! You should be careful, because ordering may not work properly.");
+      }
+
+      ConfigUtil.setBufferWrites(conf, true);
     }
 
     @SuppressWarnings("deprecation")
