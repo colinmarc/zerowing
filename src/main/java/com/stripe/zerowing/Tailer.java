@@ -250,13 +250,14 @@ public class Tailer {
 
   private void updateOptime(BasicDBObject doc) {
     BSONTimestamp ts = (BSONTimestamp) doc.get("ts");
-    int old_optime = _optime;
-    _optime = ts.getTime();
-    _inc = ts.getInc();
-    _optimeSet = true;
+    int optime = ts.getTime(), inc = ts.getInc();
 
-    // only save to disk every 60 seconds
-    if ((_optime - old_optime) >= 60) {
+    // only checkpoint every 60 seconds
+    if (!_optimeSet || (optime - _optime) >= 60) {
+      _optime = optime;
+      _inc = inc;
+      _optimeSet = true;
+
       log.info("optime: " + _optime);
       saveOptime();
     }
