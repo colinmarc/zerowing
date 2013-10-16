@@ -328,9 +328,10 @@ public class Tailer {
       byte[] raw_optime = res.getValue(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_OPTIME);
       byte[] raw_inc = res.getValue(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_INC);
 
-      int optime = Integer.parseInt(new String(raw_optime));
-      int inc = Integer.parseInt(new String(raw_inc));
-      return new BSONTimestamp(optime, inc);
+      _optime = Integer.parseInt(new String(raw_optime));
+      _inc = Integer.parseInt(new String(raw_inc));
+      _optimeSet = true;
+      return new BSONTimestamp(_optime, _inc);
     }
   }
 
