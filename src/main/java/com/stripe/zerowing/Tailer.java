@@ -47,6 +47,7 @@ public class Tailer {
   private final HConnection _hbase;
   private final HashMap<String, HTable> _knownTables;
   private final HTable _stateTable;
+  private final byte[] _tailerID;
   private final Translator _translator;
 
   private final boolean _skipUpdates;
@@ -58,7 +59,7 @@ public class Tailer {
   private int _inc = 0;
   private boolean _optimeSet = false;
 
-  public Tailer(Configuration conf, Mongo mongo, HConnection hbase) {
+  public Tailer(Configuration conf, Mongo mongo, HConnection hbase, String tailerName) {
     _conf = conf;
     _mongo = mongo;
     _hbase = hbase;
@@ -67,10 +68,22 @@ public class Tailer {
 
     _stateTable = createStateTable();
 
+    if (tailerName == null) {
+      List<ServerAddress> addresses = _mongo.getAllAddress();
+      tailerName = StringUtils.join(addresses, ",");
+    }
+
+    _tailerID = tailerName.getBytes();
+
     _skipUpdates = ConfigUtil.getSkipUpdates(_conf);
     _skipDeletes = ConfigUtil.getSkipDeletes(_conf);
     _bufferWrites = ConfigUtil.getBufferWrites(_conf);
   }
+
+  public Tailer(Configuration conf, Mongo mongo, HConnection hbase) {
+    this(conf, mongo, hbase, null);
+  }
+
 
   public void tail() {
     if(!_running.compareAndSet(false, true)) return;
@@ -266,7 +279,7 @@ public class Tailer {
   private void saveOptime() {
     if (!_optimeSet) return;
 
-    Put put = new Put(getTailerID().getBytes());
+    Put put = new Put(_tailerID);
     put.add(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_OPTIME, Integer.toString(_optime).getBytes());
     put.add(STATE_TABLE_COL_FAMILY, STATE_TABLE_COL_QUALIFIER_INC, Integer.toString(_inc).getBytes());
 
@@ -283,11 +296,6 @@ public class Tailer {
     } catch (Exception e) {
       throw new RuntimeException("Failed to (re-)connect to HBase", e);
     }
-  }
-
-  private String getTailerID() {
-    List<ServerAddress> addresses = _mongo.getAllAddress();
-    return StringUtils.join(addresses, ",");
   }
 
   private HTable createStateTable() {
@@ -311,13 +319,13 @@ public class Tailer {
   }
 
   private BSONTimestamp getStartingTimestamp() {
-    Get get = new Get(getTailerID().getBytes());
+    Get get = new Get(_tailerID);
 
     Result res;
     try {
       res = _stateTable.get(get);
     } catch (IOException e) {
-      log.error("Failed to get a starting timestamp for tailer ID: " + getTailerID());
+      log.error("Failed to get a starting timestamp for tailer ID: " + _tailerID);
       return null;
     }
 
@@ -341,6 +349,9 @@ public class Tailer {
 
     @Parameter(names = {"-t", "--translator"}, description = "Specify a ZWTranslator class to use. Defaults to com.stripe.zerowing.ZWBasicTranslator")
     private String translatorClass;
+
+    @Parameter(names = {"-n", "--tailer-name"}, description = "The name to save the tailer's optime under. By default, this is the combined hostnames of all replica set members.")
+    private String tailerName;
 
     @Parameter(names = "--skip-updates", description = "Skip update operations - when a record is updated in MongoDB, don't update it in HBase")
     private boolean skipUpdates;
@@ -414,7 +425,7 @@ public class Tailer {
       return;
     }
 
-    Tailer tailer = new Tailer(conf, mongo, hbase);
+    Tailer tailer = new Tailer(conf, mongo, hbase, opts.tailerName);
     Thread currentThread = Thread.currentThread();
     Runtime.getRuntime().addShutdownHook(new TailerCleanupThread(tailer, currentThread));
 
