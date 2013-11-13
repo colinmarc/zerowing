@@ -15,7 +15,7 @@ public class ConfigUtil {
   public static final String TAILER_STATE_TABLE = "zerowing.tailer.state_table";
 
   public static final String DEFAULT_TEMPORARY_HFILE_PATH = "/tmp/zerowing_hfile_out";
-  public static final int DEFAULT_PRESPLIT_TABLE_REGION_SIZE = 536870912; //512mb
+  public static final long DEFAULT_PRESPLIT_TABLE_REGION_SIZE = 10737418240L; //10gb
   public static final String DEFAULT_TAILER_STATE_TABLE = "_zw_tailers";
 
   public static void setTranslatorClass(Configuration conf, Class<? extends Translator> translatorClass) {
@@ -56,8 +56,8 @@ public class ConfigUtil {
     conf.setInt(PRESPLIT_TABLE_REGION_SIZE, numBytes);
   }
 
-  public static int getPresplitTableRegionSize(Configuration conf) {
-    return conf.getInt(PRESPLIT_TABLE_REGION_SIZE, DEFAULT_PRESPLIT_TABLE_REGION_SIZE);
+  public static long getPresplitTableRegionSize(Configuration conf) {
+    return conf.getLong(PRESPLIT_TABLE_REGION_SIZE, DEFAULT_PRESPLIT_TABLE_REGION_SIZE);
   }
 
   public static void setMergeExistingTable(Configuration conf, boolean mergeExisting) {

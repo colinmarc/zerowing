@@ -201,7 +201,7 @@ public class BulkImportRunner implements Tool {
   private byte[][] calculateRegionSplits(MongoURI uri, String tableName) throws Exception {
     DBCollection collection = uri.connectDB().getCollection(uri.getCollection());
     long size = collection.getStats().getLong("size");
-    int regionSize = ConfigUtil.getPresplitTableRegionSize(_conf);
+    long regionSize = ConfigUtil.getPresplitTableRegionSize(_conf);
     int numRegions = (int) Math.min((size / regionSize) + 1, 4096);
 
     if (numRegions > 1) {
@@ -255,7 +255,7 @@ public class BulkImportRunner implements Tool {
     @Parameter(names = "--no-split", description = "Don't presplit HBase tables")
     private boolean noSplit;
 
-    @Parameter(names = "--region-size", description = "Size of regions to presplit HBase tables into. Defaults to 512mb")
+    @Parameter(names = "--region-size", description = "Size of regions to presplit HBase tables into. Defaults to 10gb")
     private String regionSize;
 
     @Parameter(names = "--mongo-split-size", description = "Size of chunks to split Mongo collections into. Defaults to 8mb")
