@@ -172,6 +172,34 @@ public class TestTailer {
     assertEquals(3, getSingleValue(table, "c"));
   }
 
+  @Test
+  public void testResyncUpdate() throws Exception {
+    Configuration conf = new Configuration(util.getConfiguration());
+    ConfigUtil.setSkipBacklog(conf, true);
+
+    HBaseAdmin admin = util.getHBaseAdmin();
+    assertFalse(admin.tableExists(tableName));
+
+    startTailer(conf);
+    DBCollection collection = mongo.getDB("_test_zerowing").getCollection(name);
+    collection.insert(new BasicDBObject("_id", "a").append("num", 1));
+    collection.update(
+      new BasicDBObject("_id", "a"),
+      new BasicDBObject("$set", new BasicDBObject("num", 2)));
+    Thread.sleep(15000);
+    stopTailer();
+
+    assertTrue(admin.tableExists(tableName));
+
+    HTable table = new HTable(conf, tableName);
+    assertEquals(1, getCount(table));
+
+    int[] values = getValues(table, "a");
+    assertEquals(2, values.length);
+    assertEquals(2, values[0]);
+    assertEquals(1, values[1]);
+  }
+
   private void createOps() throws Exception {
     DBCollection collection = mongo.getDB("_test_zerowing").getCollection(name);
     collection.insert(new BasicDBObject("_id", "a").append("num", 1));
