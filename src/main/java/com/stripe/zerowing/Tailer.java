@@ -200,10 +200,7 @@ public class Tailer {
       doc = _mongo.getDB(database).getCollection(collection).findOne(query);
 
       // the document may have since been removed
-      if (doc == null) {
-        handleDelete(table, selector);
-        return;
-      }
+      if (doc == null) return
     } else {
       // the document itself is usually missing _id (but it's always present in the selector)
       doc.put("_id", id);
