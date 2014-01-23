@@ -23,7 +23,7 @@ You can use the bulk import tool straight from the command line, like so (your c
 
     $ export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:`hbase classpath`
     $ hadoop jar target/zerowing-0.2.0-with-deps.jar \
-      --mongo mongodb://localhost:27017/?slaveOk=true \
+      --mongo mongodb://localhost:27017/?readPreference=secondary \
       --database foo   \ # optional; omit it to import every collection in every database
       --collection bar \ # optional; omit it to import every collection in the specified database
 
@@ -34,10 +34,10 @@ You can also use it as a library:
     BulkImportRunner runner = new BulkImportRunner();
 
     // add a job for every collection in the database "foo"
-    runner.addJobsForNamespace("mongodb://localhost:27017/?slaveOk=true", "foo", null);
+    runner.addJobsForNamespace("mongodb://localhost:27017/?readPreference=secondary", "foo", null);
 
     // add a job for baz.qux
-    runner.addJob("mongodb://localhost:27017/baz.qux?slaveOk=true")
+    runner.addJob("mongodb://localhost:27017/baz.qux?readPreference=secondary")
 
     // go go go!
     runner.doBulkImport();
