@@ -4,7 +4,7 @@
   <groupId>com.stripe</groupId>
   <artifactId>zerowing</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.4</version>
+  <version>0.3.5</version>
   <name>zerowing</name>
   <description>All your HBase are belong to us</description>
   <url>https://github.com/stripe/zerowing</url>
