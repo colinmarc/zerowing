@@ -32,6 +32,7 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 import com.mongodb.ServerAddress;
+import com.mongodb.ReadPreference;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
@@ -197,10 +198,10 @@ public class Tailer {
 
     if (resync) {
       DBObject query = new BasicDBObject("_id", id);
-      doc = _mongo.getDB(database).getCollection(collection).findOne(query);
+      doc = _mongo.getDB(database).getCollection(collection).findOne(query, null, ReadPreference.primaryPreferred());
 
       // the document may have since been removed
-      if (doc == null) return
+      if (doc == null) return;
     } else {
       // the document itself is usually missing _id (but it's always present in the selector)
       doc.put("_id", id);
